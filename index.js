@@ -22,30 +22,34 @@ var express = require('express');
  * @param  {Object|Function} options or callback function
  * @param  {Function} fn
  */
-
-express.response.renderStatic = function(view, options, fn) {
-	var self = this, req = this.req, app = req.app;
-
-	if ('undefined' == typeof app.cachedViews) {
-		app.cachedViews = [];
-	}
-
-	if ('function' == typeof options) {
-		fn = options, options = {};
-	}
-
-	fn = fn || function(err, str){
-		if (err) return req.next(err);
-		self.send(str);
-	};
-
-	if (view in app.cachedViews) {
-		fn(null, app.cachedViews[view]);
-	} else {
-		this.render(view, options, function(err, str) {
-			app.cachedViews[view] = str;
+if (process.env.CACHE_TEMPLATES){
+	express.response.renderStatic = function(view, options, fn) {
+		var self = this, req = this.req, app = req.app;
+	
+		if ('undefined' == typeof app.cachedViews) {
+			app.cachedViews = [];
+		}
+	
+		if ('function' == typeof options) {
+			fn = options, options = {};
+		}
+	
+		fn = fn || function(err, str){
 			if (err) return req.next(err);
 			self.send(str);
-		});
-	}
-};
+		};
+	
+		if (view in app.cachedViews) {
+			fn(null, app.cachedViews[view]);
+		} else {
+			this.render(view, options, function(err, str) {
+				app.cachedViews[view] = str;
+				if (err) return req.next(err);
+				self.send(str);
+			});
+		}
+	};
+}
+else{
+	express.response.renderStatic = express.response.render;
+}
