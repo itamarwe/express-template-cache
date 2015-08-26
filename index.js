@@ -22,7 +22,7 @@ var express = require('express');
  * @param  {Object|Function} options or callback function
  * @param  {Function} fn
  */
-if (process.env.CACHE_TEMPLATES){
+if (process.env.CACHE_TEMPLATES==='true'){
 	express.response.renderStatic = function(view, options, fn) {
 		var self = this, req = this.req, app = req.app;
 	
